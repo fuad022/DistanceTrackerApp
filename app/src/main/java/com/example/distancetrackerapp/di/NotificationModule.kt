@@ -1,5 +1,6 @@
 package com.example.distancetrackerapp.di
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
