@@ -2,6 +2,7 @@ package com.example.distancetrackerapp.ui.maps
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -15,17 +16,22 @@ import androidx.lifecycle.lifecycleScope
 import com.example.distancetrackerapp.R
 import com.example.distancetrackerapp.databinding.FragmentMapsBinding
 import com.example.distancetrackerapp.service.TrackerService
+import com.example.distancetrackerapp.ui.maps.MapUtils.setCameraPosition
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_START
 import com.example.distancetrackerapp.util.ExtensionFunctions.disable
 import com.example.distancetrackerapp.util.ExtensionFunctions.hide
 import com.example.distancetrackerapp.util.ExtensionFunctions.show
 import com.example.distancetrackerapp.util.Permissions.hasBackgroundLocationPermission
 import com.example.distancetrackerapp.util.Permissions.requestBackgroundLocationPermission
+import com.google.android.gms.maps.CameraUpdateFactory
 
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.ButtCap
+import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PolylineOptions
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.delay
@@ -82,9 +88,37 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         TrackerService.locationList.observe(viewLifecycleOwner, {
             if (it != null) {
                 locationList = it
-                Log.d("LocationList", locationList.toString())
+                drawPolyline()
+                followPolyline()
             }
         })
+    }
+
+    private fun drawPolyline() {
+        val polyline = map.addPolyline(
+            PolylineOptions().apply {
+                width(10f)
+                color(Color.BLUE)
+                jointType(JointType.ROUND)
+                startCap(ButtCap())
+                endCap(ButtCap())
+                addAll(locationList)
+            }
+        )
+    }
+
+    private fun followPolyline() {
+        if (locationList.isNotEmpty()) {
+            map.animateCamera(
+                (
+                        CameraUpdateFactory.newCameraPosition(
+                            setCameraPosition(
+                                locationList.last()
+                            )
+                        )
+                        ), 1000, null
+            )
+        }
     }
 
     private fun onStartButtonClicked() {
