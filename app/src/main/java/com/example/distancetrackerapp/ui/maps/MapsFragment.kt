@@ -18,7 +18,9 @@ import com.example.distancetrackerapp.databinding.FragmentMapsBinding
 import com.example.distancetrackerapp.service.TrackerService
 import com.example.distancetrackerapp.ui.maps.MapUtils.setCameraPosition
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_START
+import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_STOP
 import com.example.distancetrackerapp.util.ExtensionFunctions.disable
+import com.example.distancetrackerapp.util.ExtensionFunctions.enable
 import com.example.distancetrackerapp.util.ExtensionFunctions.hide
 import com.example.distancetrackerapp.util.ExtensionFunctions.show
 import com.example.distancetrackerapp.util.Permissions.hasBackgroundLocationPermission
@@ -56,11 +58,15 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         binding.startButton.setOnClickListener {
             onStartButtonClicked()
         }
-        binding.stopButton.setOnClickListener {  }
+        binding.stopButton.setOnClickListener {
+            onStopButtonClicked()
+        }
         binding.resetButton.setOnClickListener {  }
 
         return binding.root
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -88,6 +94,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         TrackerService.locationList.observe(viewLifecycleOwner, {
             if (it != null) {
                 locationList = it
+                if (locationList.size > 1) {
+                    binding.stopButton.enable()
+                }
                 drawPolyline()
                 followPolyline()
             }
@@ -132,6 +141,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
         }
     }
 
+    private fun onStopButtonClicked() {
+        stopForegroundService()
+        binding.stopButton.hide()
+        binding.startButton.show()
+    }
+
     private fun startCountDown() {
         binding.timerTextView.show()
         binding.stopButton.disable()
@@ -157,6 +172,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
             }
         }
         timer.start()
+    }
+
+    private fun stopForegroundService() {
+        binding.startButton.disable()
+        sendActionCommandToService(ACTION_SERVICE_STOP)
     }
 
     private fun sendActionCommandToService(action: String) {
