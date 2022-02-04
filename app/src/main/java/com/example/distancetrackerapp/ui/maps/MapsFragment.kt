@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.distancetrackerapp.R
 import com.example.distancetrackerapp.databinding.FragmentMapsBinding
 import com.example.distancetrackerapp.service.TrackerService
-import com.example.distancetrackerapp.ui.maps.MapUtils.setCameraPosition
+import com.example.distancetrackerapp.ui.maps.MapUtil.setCameraPosition
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_START
 import com.example.distancetrackerapp.util.Constants.ACTION_SERVICE_STOP
 import com.example.distancetrackerapp.util.ExtensionFunctions.disable
@@ -46,6 +45,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
     private lateinit var map: GoogleMap
 
+    private var startTime = 0L
+    private var stopTime = 0L
+
     private var locationList = mutableListOf<LatLng>()
 
     override fun onCreateView(
@@ -65,9 +67,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
 
         return binding.root
     }
-
-
-
+    
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -100,6 +100,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                 drawPolyline()
                 followPolyline()
             }
+        })
+        TrackerService.startTime.observe(viewLifecycleOwner, {
+            startTime = it
+        })
+        TrackerService.stopTime.observe(viewLifecycleOwner, {
+            stopTime = it
         })
     }
 
