@@ -109,7 +109,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
     }
 
     private fun observeTrackerService() {
-        TrackerService.locationList.observe(viewLifecycleOwner, {
+        TrackerService.locationList.observe(viewLifecycleOwner) {
             if (it != null) {
                 locationList = it
                 if (locationList.size > 1) {
@@ -118,20 +118,22 @@ class MapsFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMyLocationButto
                 drawPolyline()
                 followPolyline()
             }
-        })
-        TrackerService.started.observe(viewLifecycleOwner, {
+        }
+        TrackerService.started.observe(viewLifecycleOwner) {
             started.value = it
-        })
-        TrackerService.startTime.observe(viewLifecycleOwner, {
+        }
+        TrackerService.startTime.observe(viewLifecycleOwner) {
             startTime = it
-        })
-        TrackerService.stopTime.observe(viewLifecycleOwner, {
+        }
+        TrackerService.stopTime.observe(viewLifecycleOwner) {
             stopTime = it
             if (stopTime != 0L) {
-                showBiggerPicture()
-                displayResults()
+                if (locationList.isNotEmpty()) {
+                    showBiggerPicture()
+                    displayResults()
+                }
             }
-        })
+        }
     }
 
     private fun drawPolyline() {
